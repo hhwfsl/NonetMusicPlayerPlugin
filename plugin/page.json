@@ -1,0 +1,23 @@
+{
+  "schemaVersion": 2,
+  "root": {
+    "type": "stack",
+    "children": [
+      {
+        "type": "selectable-text",
+        "bind": "greeting",
+        "fontSize": 20
+      },
+      {
+        "type": "text",
+        "bind": "count"
+      },
+      {
+        "type": "button",
+        "text": "Hello",
+        "action": "greet",
+        "tooltip": "Hello, Nonet!"
+      }
+    ]
+  }
+}

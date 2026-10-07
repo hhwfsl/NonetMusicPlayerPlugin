@@ -1,0 +1,28 @@
+{
+  "id": "developer.hello-world",
+  "name": "Hello World",
+  "version": "1.0.0",
+  "repositoryOwner": "YourGitHubAccount",
+  "repositoryName": "nonet_plugin_hello_world",
+  "contractVersion": 2,
+  "type": "extension",
+  "author": "Plugin Developer",
+  "description": "A minimal configurable NonetMusicPlayer plugin.",
+  "navigationLabel": "Hello World",
+  "permissions": [
+    "in-process",
+    "navigation"
+  ],
+  "pageEntry": "page.json",
+  "runtime": "managed",
+  "extensionClass": "NonetMusicPlayerPlugin.HelloWorld",
+  "requiredCapabilities": [
+    "ui.tree.v2",
+    "state.v1"
+  ],
+  "entryPoints": {
+    "win-x64": "bin/win-x64/NonetMusicPlayerPlugin.dll",
+    "linux-x64": "bin/linux-x64/NonetMusicPlayerPlugin.dll",
+    "osx-x64": "bin/osx-x64/NonetMusicPlayerPlugin.dll"
+  }
+}

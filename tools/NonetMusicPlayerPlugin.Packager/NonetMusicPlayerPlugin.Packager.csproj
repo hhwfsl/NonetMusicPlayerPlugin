@@ -1,0 +1,8 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup><OutputType>Exe</OutputType><EnableDefaultCompileItems>false</EnableDefaultCompileItems></PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="$(NonetPluginSdkProject)" />
+    <!-- 兼容旧工具入口，但代码直接来自主项目，不再保存打包器副本。 -->
+    <Compile Include="$(NonetPlayerRoot)/tools/NonetMusicPlayer.PluginPackager/Program.cs" Link="Program.cs" />
+  </ItemGroup>
+</Project>

@@ -1,0 +1,16 @@
+<Project>
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <Deterministic>true</Deterministic>
+    <PackageLicenseExpression>GPL-3.0-only</PackageLicenseExpression>
+    <Version>4.3.0</Version>
+    <NonetPlayerRoot Condition="'$(NonetPlayerRoot)' == ''">$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)../NonetMusicPlayer'))</NonetPlayerRoot>
+    <NonetPluginSdkProject>$(NonetPlayerRoot)/src/NonetMusicPlayer.PluginSdk/NonetMusicPlayer.PluginSdk.csproj</NonetPluginSdkProject>
+  </PropertyGroup>
+  <Target Name="RequireNonetSource" BeforeTargets="PrepareForBuild">
+    <Error Condition="!Exists('$(NonetPluginSdkProject)')" Text="Clone NonetMusicPlayer first, or set -p:NonetPlayerRoot=/path/to/NonetMusicPlayer." />
+  </Target>
+</Project>
