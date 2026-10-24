@@ -8,3 +8,14 @@
 publish/
 artifacts/
 *.log
+/.packages/
+/Data/
+/Logs/
+/Backups/
+/samples/
+*.impp
+.env
+.env.*
+*.key
+*.pfx
+*.pem

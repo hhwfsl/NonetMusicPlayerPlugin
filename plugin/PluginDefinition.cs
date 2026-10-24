@@ -16,11 +16,14 @@ public static class PluginDefinition
 
 
 /// <summary>通用 Hello World 后端；页面内容/动作由 JSON 定义，不依赖具体宿主控件。</summary>
-public sealed class HelloWorld : INonetExtension
+public sealed class HelloWorld : INonetExtension, INonetRuntimeAware
 {
+    private PluginRuntimeContext? _runtime;
+    public void AttachRuntime(PluginRuntimeContext context) => _runtime = context;
     private readonly ExtensionFrame _frame = new() { State = new() { ["count"] = 0, ["greeting"] = "Hello, Nonet!" } };
     public ValueTask<ExtensionFrame> InitializeAsync(ExtensionInitialization initialization, CancellationToken cancellationToken)
     {
+        _runtime?.Log("Hello World initialized.");
         var config = System.Text.Json.Nodes.JsonNode.Parse(initialization.Configuration);
         _frame.State["greeting"] = config?["greeting"]?.GetValue<string>() ?? "Hello, Nonet!"; return ValueTask.FromResult(_frame);
     }

@@ -1,4 +1,16 @@
-# 通用扩展层 v2 / SDK 4.3
+# 通用扩展层 v2 / SDK 4.14
+
+SDK 4.14 新增可选 `ui.styles.v1`、`runtime.startup.v1` 和原生主页声明。插件可按控件类型、状态和模板部件叠加样式与动画，详见 [风格开发协议](STYLE_EXTENSIONS.md)。类型级样式与具体控件布局接口独立，停用后恢复原始值，不改变既有 Contract 或程序集身份。
+
+SDK 4.13 新增可选 `network.library.v1`：读取已配对设备、分页查询远端歌单/歌曲、请求打开设备页或启停共享；播放、收藏和加入歌单仍使用原 `commands` 服务。订阅 `network.changed` 获取连接变化。协议细节与权限参见 [通用扩展参考](UNIVERSAL_EXTENSIONS.md)。旧插件不必重新编译，SDK 程序集身份保持 4.0.0.0。
+
+SDK 4.10 / Nonet 0.4.0-beta.22 新增可选托管 RPC、受监督后台任务、插件日志及独立歌词轨道。新插件默认共享宿主运行时；保留独立进程和 AOT 形态。详见 [运行时与故障管理](UNIVERSAL_EXTENSIONS.md#运行时与故障管理sdk-410)。
+
+SDK 4.9 / Nonet 0.4.0-beta.21 新增可选 `media.artwork-batch.v1`。搜索音源可声明 `musicSearch.deferredArtwork=true`，先返回歌曲元数据，再按可见行接收批量封面请求。分页结果滚动到底自动追加，宿主保留虚拟化；旧音源无需修改，详见 [分页与按需封面](UNIVERSAL_EXTENSIONS.md#分页与按需封面sdk-49可选)。
+
+SDK 4.8 / Nonet 0.4.0-beta.20 新增可选 `ui.image-data.v1`。登录页面可绑定有界 PNG/JPEG 数据显示二维码；搜索返回的 `CoverBase64` 会直接显示在结果行。仅使用此新增能力的包声明对应 requiredCapabilities，旧包不需要重编译，详见 [动态图片绑定](UNIVERSAL_EXTENSIONS.md#动态图片绑定sdk-48可选)。
+
+SDK 4.7 / Nonet 0.4.0-beta.19 新增可选 `media.search.v1` 和 `media.import.v1`。搜索型音源声明 `musicSearch` 并提供 `media-source` 服务，不在宿主加入供应商逻辑。搜索结果不自动加入音乐库；用户加入歌单时保存稳定插件 ID 和歌曲 ID，播放时重新解析。端点、分页和权限规范见 [通用接口参考](UNIVERSAL_EXTENSIONS.md#音乐搜索与目录导入sdk-47)。
 
 新版插件优先使用通用扩展，而不是请求宿主新增某个业务部件。最低宿主为 Nonet 0.4.0-beta.8。原 Contract v1 / 页面 Schema 1 / 旧 RPC 保留；LDDC 等旧插件通过原能力适配层运行，不按宿主发行版本淘汰插件。
 
@@ -9,6 +21,8 @@ SDK 4.2 / Nonet 0.4.0-beta.10 新增可选原生勾选框、图标、左键菜�
 SDK 4.3 增加可选审批、整体布局、声明式运行形态与新项目生成服务。旧 Contract 1/2 基线继续保留。
 
 详见 [通用扩展开发](EXTENSIONS.md)。本文件下方保留 v1 接口参考，用于维护已有插件。插件是普通用户权限的软件，不是安全沙箱；JSON UI 白名单仅约束宿主 API，无法限制可执行插件自行访问 OS。
+
+SDK 4.4 的完整非核心扩展入口、权限、原生视图、流程和音效规范见 [UNIVERSAL_EXTENSIONS](UNIVERSAL_EXTENSIONS.md)。旧插件无需重编译；新接口均为可选。
 
 ## 旧版接口参考
 
@@ -468,3 +482,39 @@ Native AOT 使用源生成 AgentPluginJson。应在目标系统构建 AOT；无�
 - 聊天视图使用只读可复制消息卡片、可展开工具结果/思考信息、固定输入区。聊天不保存磁盘；额外请求参数不得改变宿主的权限白名单。
 
 兼容性验证应覆盖冻结旧包、无可选字段的旧 AgentReply、Schema 无分组/预设时的原控件、初始化/取消/退出、新 manager 的配置恢复，以及日志/安装索引不含明文凭据。
+
+SDK 4.5 新增包内图片图标、复合输入区、用户交互与内联审批、独立原生浮层，详见 UNIVERSAL_EXTENSIONS；插件仍按能力协商，不按应用版本淘汰。
+
+## 无独立页面的扩展（SDK 4.6）
+
+Contract v2 扩展可声明 `"hasPage": false`、`"pageEntry": ""`，并将 `ui.page-optional.v1` 放入 requiredCapabilities。省略 hasPage 时仍为 true，保留旧包行为；旧 Contract v1 不使用此字段关闭页面。无页面扩展仍可提供插槽、事件、流程和原生浮层，不生成侧栏页面按钮，直接导航也不会产生空白页。
+
+没有页面的包不需要 page.json；打包、检查、启用、同 ID 更新和卸载后重新接入均使用同一规则。仍须满足其他权限与运行形态约束。若没有导航贡献，不必申请 navigation 权限。配置表单仍由插件中心管理，不因省略业务页面而消失。
+
+示例清单片段：
+
+```json
+{
+  "type": "extension",
+  "contractVersion": 2,
+  "hasPage": false,
+  "pageEntry": "",
+  "requiredCapabilities": ["ui.page-optional.v1"]
+}
+```
+
+此片段不是完整安装清单，必须另行声明身份、运行形态、入口及所需权限。纯后台/浮层扩展不必创建无意义的空页面。
+
+## 控件级界面定制
+
+从 SDK 4.11 起，可通过 `ui.elements.v1` 查询控件目录、覆盖布局、移动现有 Panel 子项，并使用 `ui.element` 贡献在稳定命名锚点加入控件。接口与恢复语义见 [UNIVERSAL_EXTENSIONS](UNIVERSAL_EXTENSIONS.md) 和 [UI_LAYOUT](UI_LAYOUT.md)。模板依然直接引用主项目 SDK，不复制宿主界面源码，不依赖任何具体插件。
+
+## 选择器交互（SDK 4.16）
+
+声明 `ui.select-options.v1` 后，`select` 节点可使用 `popupPlacement`（`auto`、`top`、`bottom`）和 `suppressTooltips`。前者控制弹出方向，后者同时关闭触发控件和所有选项的提示。缺省为自动方向、保留现有提示行为；旧页面无需改动。
+
+```json
+{"type":"select","bind":"choices","selectedBind":"choice","input":"choice","action":"choose","popupPlacement":"top","suppressTooltips":true}
+```
+
+同一组选项不会因轮询状态而重新创建。动作提交期间保留用户选择，完成后再与插件返回的选中状态同步；拒绝审批仍由宿主处理，交互属性不改变授权规则。

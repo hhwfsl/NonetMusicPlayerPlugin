@@ -1,10 +1,20 @@
 # Nonet 插件开发模板
 
+开发模板 **4.16.0** 对应插件 SDK **4.16.0**，建议使用 [Nonet 桌面 0.4.0-beta.37](https://github.com/hhwfsl/NonetMusicPlayer/releases/tag/v0.4.0-beta.37) 源码构建和调试。SDK 程序集兼容基线仍为 4.0.0.0；插件按所需能力协商兼容性，不按播放器版本强制升级。
+
+SDK 4.16 增加可选选择器方向/提示控制及近期统计图表接口。完整能力及兼容规则见 [PLUGIN_DEVELOPMENT](docs/PLUGIN_DEVELOPMENT.md)、[UNIVERSAL_EXTENSIONS](docs/UNIVERSAL_EXTENSIONS.md) 和 [STYLE_EXTENSIONS](docs/STYLE_EXTENSIONS.md)。最小模板仍通过 ProjectReference 使用宿主 SDK，不强制声明这些能力。
+
+SDK 4.15 的完整界面方案使用可选 `ui.composition.v1`，支持控件树重组、只读运行期设置覆盖和表现页。格式、示例与恢复验证见 [INTERFACE_PRESETS](docs/INTERFACE_PRESETS.md)。最小工程不强制声明此能力。
+
 用于开发 Nonet 桌面端插件的最小 C# 工程。模板通过 `ProjectReference` 直接引用播放器源码中的 Plugin SDK，并使用播放器的打包器生成 `.impp`；不复制 SDK、播放器或打包器。
 
 许可证：GPL-3.0-only。可用运行形态包括主进程托管、独立进程以及纯声明式扩展。当前 Hello World 使用托管形态，Contract 2，基础示例可用于支持该 Contract 的 Nonet；额外能力应先协商，不能依据应用版本假定其存在。
 
+完整通用扩展服务、界面区域、工作流、原生视图及 PCM 音效参考见 [UNIVERSAL_EXTENSIONS](docs/UNIVERSAL_EXTENSIONS.md)。SDK 4.11 的控件级布局扩展见 [UI_LAYOUT](docs/UI_LAYOUT.md)。当前示例演示 `INonetRuntimeAware` 日志连接，要求 SDK 4.10 / Nonet 0.4.0-beta.22 的 `runtime.supervised.v1`；不需要此能力时可移除该接口和对应清单能力，仅使用已冻结的 Contract 2 基线。
+
 ## 环境
+
+类型级风格和动画使用 SDK 4.14 的可选 `ui.styles.v1`；风格数据、叠加规则及完整服务调用示例见 [STYLE_EXTENSIONS](docs/STYLE_EXTENSIONS.md)。后台恢复可声明 `autoStart:true` 与 `runtime.startup.v1`，原生主页可声明 `nativePage:true` 并实现现有原生视图工厂。Hello World 不强制依赖这些能力。
 
 - .NET SDK 10.0.401 或兼容的 .NET 10 SDK。
 - Git。
@@ -32,7 +42,9 @@ dotnet build NonetMusicPlayerPlugin.slnx -c Release -p:NonetPlayerRoot=D:/Source
 pwsh ./build.ps1 -Player D:/Source/NonetMusicPlayer -Rids win-x64
 ```
 
-三个平台的发行包分别生成在 `publish/`，每包只含本平台所需入口、页面、配置规范和许可证。不要把源码目录压缩后当作安装包。
+无业务页面的浮层或后台扩展可使用 SDK 4.6 的 `hasPage=false` 与 `ui.page-optional.v1`，详见接口参考；默认示例继续保留页面以兼容既有宿主。
+
+默认生成 Windows x64/x86/ARM64、Linux x64/ARM64 和 macOS x64 六种发行包，分别位于 `publish/`。每包只含本平台入口、页面、配置规范和许可证。初始 Hello World 插件版本为 1.1.0，与模板/SDK 版本独立编号。可用 `-Rids win-x64` 仅打包一个目标，不要把源码目录压缩后当作安装包。
 
 ## 修改示例
 

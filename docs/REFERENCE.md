@@ -1,5 +1,13 @@
 # 插件接口与能力参考
 
+SDK 4.16 的选择器方向及提示控制见 [PLUGIN_DEVELOPMENT](PLUGIN_DEVELOPMENT.md)，近期统计与查询结果见 [UNIVERSAL_EXTENSIONS](UNIVERSAL_EXTENSIONS.md)，图表和卡片外观见 [STYLE_EXTENSIONS](STYLE_EXTENSIONS.md)。基础示例只声明实际使用的能力；额外功能须按宿主提供的能力列表协商。
+
+完整界面方案见 [INTERFACE_PRESETS](INTERFACE_PRESETS.md)，使用 SDK 4.15 的可选 `ui.composition.v1` 与既有 styles 服务。布局文件只描述表现，不能写入设置、运行脚本或新增业务功能。
+
+类型级样式、动画、资源与可撤销叠加使用 SDK 4.14 的可选 `ui.styles.v1`，参见 [风格扩展协议](STYLE_EXTENSIONS.md)。默认 Hello World 不要求此能力；清单的 `autoStart` 与 `nativePage` 也是可选字段。
+
+SDK 4.4 的宿主服务目录、原生视图、流程钩子与 PCM 接口详见 [通用扩展参考](UNIVERSAL_EXTENSIONS.md)。可选能力按实际需要声明，不能按客户端版本推断能力。
+
 ## 1. 清单与兼容性
 
 `manifest.json` 位于包根目录。必填项包括稳定 `id`、用户可见名称、数字版本、`type`、`contractVersion`、运行形态、入口和页面。新插件填写作者与 GitHub 仓库信息。

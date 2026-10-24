@@ -13,7 +13,8 @@ internal static class Program
             var work = Path.Combine(root, "artifacts", "checks-" + Guid.NewGuid().ToString("N")); Directory.CreateDirectory(work);
             var source = Path.Combine(work, "source"); Directory.CreateDirectory(source);
             foreach (var name in new[] { "manifest.json", "page.json", "plugin_config_schema.json", "LICENSE" }) File.Copy(Path.Combine(root, "plugin", name), Path.Combine(source, name));
-            foreach (var rid in new[] { "win-x64", "linux-x64", "osx-x64" })
+            string[] rids = ["win-x64", "win-x86", "win-arm64", "linux-x64", "linux-arm64", "osx-x64"];
+            foreach (var rid in rids)
             {
                 var target = Path.Combine(source, "bin", rid); Directory.CreateDirectory(target);
                 File.Copy(Path.Combine(root, "plugin/bin/Release/net10.0/NonetMusicPlayerPlugin.dll"), Path.Combine(target, "NonetMusicPlayerPlugin.dll"));
@@ -21,6 +22,13 @@ internal static class Program
             var package = PluginPackageBuilder.Pack(source, Path.Combine(work, "hello.impp"), false, null, PluginPlatformPolicy.CurrentRid);
             var manifest = PluginPackageInspector.Inspect(package); Require(manifest.Type == "extension" && !manifest.Enabled, "Manifest is valid and installs disabled.");
             using (var zip = ZipFile.OpenRead(package)) Require(zip.Entries.Count == 5 && zip.GetEntry("LICENSE") is not null && zip.Entries.All(e => !e.FullName.Contains("sdk") && !e.FullName.Contains("samples")), "Only runtime JSON and the required GPL license are distributed.");
+            foreach (var rid in rids)
+            {
+                var platformPackage = PluginPackageBuilder.Pack(source, Path.Combine(work, "hello-" + rid + ".impp"), false, null, rid);
+                Require(PluginPackageInspector.Inspect(platformPackage).EntryPoints.Keys.SequenceEqual([rid]), "Each package advertises exactly one target.");
+                using var zip = ZipFile.OpenRead(platformPackage);
+                Require(zip.Entries.Count == 5 && zip.Entries.Where(e => e.FullName.StartsWith("bin/")).All(e => e.FullName.StartsWith("bin/" + rid + "/")), "No other-platform payload is bundled.");
+            }
             using var schemaFile = File.OpenRead(Path.Combine(root, "plugin", PluginConfigSchema.FileName)); var schema = PluginConfigSchema.Read(schemaFile);
             var values = PluginConfigSchema.Defaults(schema); values["greeting"] = "你好，プラグイン！"; PluginConfigSchema.Validate(schema, values);
             var page = JsonNode.Parse(File.ReadAllText(Path.Combine(root, "plugin", manifest.PageEntry)))!;
@@ -33,6 +41,10 @@ internal static class Program
                 && ExtensionContract.Capabilities.Contains("ui.layout-bind.v1") && ExtensionContract.Capabilities.Contains("ui.context-menu.v1"), "Optional dynamic layout and context menu descriptions are valid.");
             using var controlsPage = new MemoryStream(System.Text.Encoding.UTF8.GetBytes("""{"schemaVersion":2,"root":{"type":"stack","children":[{"type":"icon","icon":"Sidebar"},{"type":"checkbox","bind":"checked","input":"selection","action":"select"},{"type":"button","variant":"ghost","selectedIf":"active","openMenuOnClick":true,"contextActions":[{"type":"button","text":"Rename","action":"rename"}]}]}}"""));
             Require(ExtensionContract.ReadPage(controlsPage).Root.Children.Count == 3 && ExtensionContract.Capabilities.Contains("ui.controls.v1"), "Optional controls preserve the existing interface.");
+            using var selectPage = new MemoryStream(System.Text.Encoding.UTF8.GetBytes("""{"schemaVersion":2,"root":{"type":"select","bind":"choices","selectedBind":"choice","popupPlacement":"top","suppressTooltips":true}}"""));
+            var choice = ExtensionContract.ReadPage(selectPage).Root;
+            Require(choice is { PopupPlacement: "top", SuppressTooltips: true } && ExtensionContract.Capabilities.Contains("ui.select-options.v1"), "SDK 4.16 optional select fields are available.");
+            Require(ExtensionContract.Capabilities.Contains("statistics.charts.v1") && StyleSheetContract.ControlTypes.Contains("ListeningBarChart"), "Current chart and style interfaces are directly referenced.");
             ExtensionContract.ValidateFrame(new() { Requests = [new("prompt", "dialogs.prompt", new() { ["text"] = "Rename", ["initial"] = "Old" })] });
             var backend = new NonetMusicPlayerPlugin.HelloWorld(); var frame = backend.InitializeAsync(new(2, values.ToJsonString(), work, ExtensionContract.Capabilities), default).Result;
             Require(frame.State["greeting"]!.GetValue<string>() == "你好，プラグイン！", "Configuration initializes plugin state.");
@@ -51,7 +63,7 @@ internal static class Program
                 using var writer = new StreamWriter(invalidZip.CreateEntry("LICENSE").Open()); writer.Write(new string('x', 256 * 1024 + 1));
             }
             Reject(() => PluginPackageInspector.Inspect(oversized), "License exception remains bounded and cannot bypass package policy.");
-            Console.WriteLine("PASS minimal package, configuration, overwrite protection and path validation"); return 0;
+            Console.WriteLine("PASS six clean platform packages, SDK 4.16 optional capabilities, configuration, overwrite protection and path validation"); return 0;
         }
         catch (Exception error) { Console.Error.WriteLine(error); return 1; }
     }

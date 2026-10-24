@@ -32,9 +32,9 @@ dotnet run --project tests/NonetMusicPlayerPlugin.Checks -c Release -- .
 pwsh ./build.ps1 -Player ../NonetMusicPlayer -Rids win-x64
 ```
 
-macOS 用 `osx-x64`，Linux 用 `linux-x64`。如需三个平台，省略 `-Rids`。本示例是托管 DLL；无需下载三个运行时，也无需安装 Native AOT 工具链。
+macOS 用 `osx-x64`，Linux 用 `linux-x64` 或 `linux-arm64`，Windows 可用 `win-x64`、`win-x86` 或 `win-arm64`。省略 `-Rids` 时打包全部六种目标。本示例是共享宿主运行时的托管 DLL，无需下载独立运行时或安装 Native AOT 工具链。
 
-导入 `publish/developer.hello-world-1.0.0-win-x64.impp` 到 Nonet 插件中心。启用托管代码时确认信任提示，打开侧边栏插件页，点击问候按钮，确认计数增加。此时已验证源码、SDK、打包器与真实宿主整条链路。
+导入 `publish/developer.hello-world-1.1.0-win-x64.impp` 到 Nonet 插件中心。启用托管代码时确认信任提示，打开侧边栏插件页，点击问候按钮，确认计数增加。此时已验证源码、SDK、打包器与真实宿主整条链路。
 
 ## 3. 为自己的插件建立身份
 
@@ -144,8 +144,8 @@ pwsh ./build.ps1 -Player ../NonetMusicPlayer -Rids win-x64
 
 ## 10. 发布与更新
 
-将 manifest.version 增加到 `1.0.1`，重新构建。用户拖入新包时宿主识别同 ID，确认后升级；低版本拒绝覆盖，高版本不改变原身份。
+例如将 manifest.version 从 `1.1.0` 增加到 `1.1.1`，重新构建。用户拖入新包时宿主识别同 ID，确认后升级；低版本拒绝覆盖，高版本不改变原身份。
 
-GitHub Release 按平台上传三个 impp，而不是把三个可执行入口塞到一个代码包。不要上传 bin/obj、源码 ZIP、凭据、缓存或个人使用数据。包名称可以带版本，身份和版本仍以清单为准。
+GitHub Release 按支持的 RID 分别上传 impp，每包仅包含一个平台入口。不要上传 bin/obj、凭据、缓存或个人使用数据，也不要将源码 ZIP 作为插件安装包。包名称可以带版本，身份和版本仍以清单为准。
 
 公开发布前检查许可证、第三方许可文本、仓库名称、版本、最小能力及实际平台测试结果。Hello World 基础接口可在公开宿主上构建；新增可选能力是否可用，以安装目标的能力列表为准。
